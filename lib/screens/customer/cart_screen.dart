@@ -54,6 +54,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 color: Colors.grey,
               ),
             ),
+            SizedBox(height: 8),
+            Text(
+              'Add some delicious items! 🍕',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+            ),
           ],
         ),
       )
@@ -88,7 +96,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
   Widget _buildCheckoutBottomSheet(BuildContext context, double total) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -149,6 +157,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   void _processCheckout(BuildContext context) {
+    // ✅ Check if mounted before showing dialog
+    if (!mounted) return;
+
     // STRIPE INTENT ENGINE BLUEPRINT:
     // 1. Create Stripe PaymentIntent
     // final stripeService = StripeService();
@@ -181,15 +192,42 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     // Show payment simulation
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Processing Payment'),
-        content: const Text('Payment processed successfully!'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Please wait...'),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              // ✅ Check if mounted before navigation
+              if (!mounted) return;
+
+              Navigator.pop(dialogContext);
+
+              // ✅ Check again before clearing cart
+              if (!mounted) return;
               ref.read(cartProvider.notifier).clearCart();
+
+              // ✅ Check again before popping
+              if (!mounted) return;
               Navigator.pop(context);
+
+              // ✅ Show success snackbar
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Order placed successfully! 🎉'),
+                  backgroundColor: Color(0xFF2ECC71),
+                  duration: Duration(seconds: 2),
+                ),
+              );
             },
             child: const Text('OK'),
           ),
@@ -234,13 +272,13 @@ class _CartItemCard extends StatelessWidget {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: const Color(0xFFE21B70).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               Icons.restaurant,
               size: 30,
-              color: Colors.grey[400],
+              color: const Color(0xFFE21B70).withOpacity(0.5),
             ),
           ),
           const SizedBox(width: 12),
@@ -255,6 +293,8 @@ class _CartItemCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF222222),
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -270,19 +310,22 @@ class _CartItemCard extends StatelessWidget {
           ),
           Row(
             children: [
-              IconButton(
-                onPressed: onDecrement,
-                icon: const CircleAvatar(
+              // ✅ Decrease Button
+              GestureDetector(
+                onTap: onDecrement,
+                child: CircleAvatar(
                   radius: 16,
-                  backgroundColor: Color(0xFFE21B70),
+                  backgroundColor: cartItem.quantity > 1
+                      ? const Color(0xFFE21B70)
+                      : Colors.grey[300],
                   child: Icon(
                     Icons.remove,
                     size: 18,
-                    color: Colors.white,
+                    color: cartItem.quantity > 1
+                        ? Colors.white
+                        : Colors.grey[600],
                   ),
                 ),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
               ),
               const SizedBox(width: 8),
               Text(
@@ -294,9 +337,10 @@ class _CartItemCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              IconButton(
-                onPressed: onIncrement,
-                icon: const CircleAvatar(
+              // ✅ Increase Button
+              GestureDetector(
+                onTap: onIncrement,
+                child: const CircleAvatar(
                   radius: 16,
                   backgroundColor: Color(0xFFE21B70),
                   child: Icon(
@@ -305,18 +349,23 @@ class _CartItemCard extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
               ),
               const SizedBox(width: 8),
-              IconButton(
-                onPressed: onRemove,
-                icon: const Icon(
-                  Icons.delete_outline,
-                  color: Colors.red,
+              // ✅ Delete Button
+              GestureDetector(
+                onTap: onRemove,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.delete_outline,
+                    size: 20,
+                    color: Colors.red,
+                  ),
                 ),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
               ),
             ],
           ),

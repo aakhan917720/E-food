@@ -19,12 +19,16 @@ class OrderTrackingScreen extends StatelessWidget {
         ),
         automaticallyImplyLeading: false,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Container(
-              margin: const EdgeInsets.all(16),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+
+            const SizedBox(height: 12),
+
+            // Map Placeholder
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              height: 200,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -38,11 +42,13 @@ class OrderTrackingScreen extends StatelessWidget {
               ),
               child: _buildMapPlaceholder(),
             ),
-          ),
-          Expanded(
-            child: Container(
+
+            const SizedBox(height: 12),
+
+            // Status Card
+            Container(
               margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),  // ✅ REDUCED from 20 to 16
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -56,16 +62,17 @@ class OrderTrackingScreen extends StatelessWidget {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,  // ✅ ADDED
                 children: [
                   const Text(
                     'Order Status',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,  // ✅ REDUCED from 18 to 16
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF222222),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),  // ✅ REDUCED from 16 to 12
                   _buildStatusStep(
                     step: 1,
                     label: 'Order Placed',
@@ -89,47 +96,37 @@ class OrderTrackingScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildMapPlaceholder() {
-    // MAPS LAT-LNG STREAMING BLUEPRINT:
-    // Google Maps integration with live rider tracking
-    // 1. Initialize GoogleMapController with initialCameraPosition
-    // 2. Subscribe to Firestore real-time updates for rider location
-    //    stream: FirebaseFirestore.instance
-    //            .collection('deliveries')
-    //            .doc(orderId)
-    //            .snapshots()
-    // 3. Update marker position based on latitude/longitude updates
-    // 4. Add polyline showing route from restaurant to customer
-    // 5. Calculate ETA based on current position
+  // ✅ 6 Small Cards with 20px height
 
+  Widget _buildMapPlaceholder() {
     return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.map,
-            size: 80,
+            size: 50,  // ✅ REDUCED from 60 to 50
             color: Colors.grey,
           ),
-          SizedBox(height: 16),
+          SizedBox(height: 6),  // ✅ REDUCED from 8 to 6
           Text(
             'Live Map Display Area',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 13,  // ✅ REDUCED from 14 to 13
               color: Colors.grey,
             ),
           ),
-          SizedBox(height: 8),
+          SizedBox(height: 3),  // ✅ REDUCED from 4 to 3
           Text(
             'Rider location will appear here',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 11,  // ✅ REDUCED from 12 to 11
               color: Colors.grey,
             ),
           ),
@@ -144,33 +141,34 @@ class OrderTrackingScreen extends StatelessWidget {
     required bool isComplete,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 4),  // ✅ REDUCED from 6 to 4
       child: Row(
         children: [
           Container(
-            width: 28,
-            height: 28,
+            width: 24,  // ✅ REDUCED from 28 to 24
+            height: 24,  // ✅ REDUCED from 28 to 24
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isComplete ? const Color(0xFF2ECC71) : Colors.grey[300],
             ),
             child: Center(
               child: isComplete
-                  ? const Icon(Icons.check, size: 18, color: Colors.white)
+                  ? const Icon(Icons.check, size: 14, color: Colors.white)  // ✅ REDUCED from 18 to 14
                   : Text(
                 step.toString(),
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
+                  fontSize: 11,  // ✅ ADDED
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),  // ✅ REDUCED from 16 to 12
           Text(
             label,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 14,  // ✅ REDUCED from 16 to 14
               color: isComplete ? const Color(0xFF222222) : Colors.grey,
               fontWeight: isComplete ? FontWeight.w500 : FontWeight.normal,
             ),

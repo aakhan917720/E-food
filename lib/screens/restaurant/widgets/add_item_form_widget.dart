@@ -178,7 +178,7 @@ class _AddItemFormWidgetState extends ConsumerState<AddItemFormWidget> {
         isAvailable: true,
       );
 
-      // FIREBASE STORAGE BINARY UPLOAD PIPELINE BLUEPRINT:
+      // 🔥 FIREBASE STORAGE BLUEPRINT:
       // 1. User selects image from device
       // 2. Upload image to Firebase Storage
       // 3. Get download URL
@@ -194,8 +194,9 @@ class _AddItemFormWidgetState extends ConsumerState<AddItemFormWidget> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Menu item added successfully!'),
+          content: Text('Menu item added successfully! ✅'),
           backgroundColor: Color(0xFF2ECC71),
+          duration: Duration(seconds: 2),
         ),
       );
     }

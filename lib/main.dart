@@ -1,3 +1,4 @@
+import 'package:e_foodie/screens/customer/sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'screens/customer/onboarding_screen.dart';
@@ -8,7 +9,6 @@ import 'screens/rider/rider_dashboard.dart';
 import 'screens/admin/admin_dashboard_wrapper.dart';
 
 void main() {
-  // WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: EFoodieApp()));
 }
 
@@ -45,6 +45,7 @@ class EFoodieApp extends StatelessWidget {
       routes: {
         '/': (context) => const OnboardingScreen(),
         '/login': (context) => const LoginScreen(),
+        '/signup': (context) => const SignUpScreen(),  // ✅ ADD THIS
         '/customer/home': (context) => const HomeMenuScreen(),
         '/restaurant/dashboard': (context) => const RestaurantDashboard(),
         '/rider/dashboard': (context) => const RiderDashboard(),

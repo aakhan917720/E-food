@@ -13,8 +13,11 @@ class ManageMenuTab extends ConsumerWidget {
 
     return Column(
       children: [
+        // ✅ Add Item Form
         const AddItemFormWidget(),
         const Divider(height: 1),
+
+        // ✅ Menu List
         Expanded(
           child: menuItems.isEmpty
               ? const Center(
@@ -47,22 +50,25 @@ class ManageMenuTab extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
+                    // ✅ Image/Icon
                     Container(
                       width: 50,
                       height: 50,
                       decoration: BoxDecoration(
-                        color: Colors.grey[200],
+                        color: const Color(0xFFE21B70).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(
                         child: Icon(
                           Icons.restaurant,
                           size: 24,
-                          color: Colors.grey[400],
+                          color: const Color(0xFFE21B70).withOpacity(0.5),
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
+
+                    // ✅ Details
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,11 +86,21 @@ class ManageMenuTab extends ConsumerWidget {
                             style: const TextStyle(
                               fontSize: 14,
                               color: Color(0xFFE21B70),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            item.category,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[500],
                             ),
                           ),
                         ],
                       ),
                     ),
+
+                    // ✅ Availability Toggle
                     Switch(
                       value: item.isAvailable,
                       onChanged: (_) {
@@ -94,6 +110,8 @@ class ManageMenuTab extends ConsumerWidget {
                       inactiveThumbColor: Colors.grey,
                       inactiveTrackColor: Colors.grey[300],
                     ),
+
+                    // ✅ Delete Button
                     IconButton(
                       icon: const Icon(
                         Icons.delete_outline,
@@ -116,6 +134,12 @@ class ManageMenuTab extends ConsumerWidget {
                                 onPressed: () {
                                   menuNotifier.deleteFoodItem(item.id);
                                   Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Item deleted! 🗑️'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
                                 },
                                 style: TextButton.styleFrom(
                                   foregroundColor: const Color(0xFFE74C3C),

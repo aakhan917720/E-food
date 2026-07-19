@@ -2,8 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../models/food_item.dart';
 
-final restaurantMenuProvider =
-StateNotifierProvider<RestaurantMenuNotifier, List<FoodItem>>((ref) {
+final restaurantMenuProvider = StateNotifierProvider<RestaurantMenuNotifier, List<FoodItem>>((ref) {
   return RestaurantMenuNotifier();
 });
 
@@ -17,7 +16,7 @@ class RestaurantMenuNotifier extends StateNotifier<List<FoodItem>> {
         name: 'Signature Burger',
         price: 12.99,
         category: 'Burgers',
-        imageUrl: 'assets/images/burger.jpg',
+        imageUrl: '',
         isAvailable: true,
       ),
       const FoodItem(
@@ -25,7 +24,7 @@ class RestaurantMenuNotifier extends StateNotifier<List<FoodItem>> {
         name: 'Truffle Pizza',
         price: 16.99,
         category: 'Pizza',
-        imageUrl: 'assets/images/pizza.jpg',
+        imageUrl: '',
         isAvailable: true,
       ),
       const FoodItem(
@@ -33,19 +32,16 @@ class RestaurantMenuNotifier extends StateNotifier<List<FoodItem>> {
         name: 'Pasta Primavera',
         price: 13.99,
         category: 'Pasta',
-        imageUrl: 'assets/images/pasta.jpg',
+        imageUrl: '',
         isAvailable: false,
       ),
     ];
   }
 
-  // FIREBASE GATEWAY BLUEPRINT:
-  // Menu syncs to Firestore collection: restaurants/{restaurantId}/menu
-  // Each menu item update triggers Firestore write
-
+  // ✅ ADD FOOD ITEM
   void addFoodItem(FoodItem item) {
     state = [...state, item];
-    // FIREBASE GATEWAY BLUEPRINT:
+    // 🔥 FIREBASE BLUEPRINT:
     // await FirebaseFirestore.instance
     //     .collection('restaurants')
     //     .doc(restaurantId)
@@ -54,9 +50,10 @@ class RestaurantMenuNotifier extends StateNotifier<List<FoodItem>> {
     //     .set(item.toMap());
   }
 
+  // ✅ DELETE FOOD ITEM
   void deleteFoodItem(String id) {
     state = state.where((item) => item.id != id).toList();
-    // FIREBASE GATEWAY BLUEPRINT:
+    // 🔥 FIREBASE BLUEPRINT:
     // await FirebaseFirestore.instance
     //     .collection('restaurants')
     //     .doc(restaurantId)
@@ -65,6 +62,7 @@ class RestaurantMenuNotifier extends StateNotifier<List<FoodItem>> {
     //     .delete();
   }
 
+  // ✅ TOGGLE AVAILABILITY
   void toggleAvailability(String id) {
     final index = state.indexWhere((item) => item.id == id);
     if (index != -1) {
@@ -76,24 +74,13 @@ class RestaurantMenuNotifier extends StateNotifier<List<FoodItem>> {
         updatedItem,
         ...state.sublist(index + 1),
       ];
-      // FIREBASE GATEWAY BLUEPRINT:
+      // 🔥 FIREBASE BLUEPRINT:
       // await FirebaseFirestore.instance
       //     .collection('restaurants')
       //     .doc(restaurantId)
       //     .collection('menu')
       //     .doc(id)
       //     .update({'isAvailable': updatedItem.isAvailable});
-    }
-  }
-
-  void updateMenuItem(FoodItem item) {
-    final index = state.indexWhere((i) => i.id == item.id);
-    if (index != -1) {
-      state = [
-        ...state.sublist(0, index),
-        item,
-        ...state.sublist(index + 1),
-      ];
     }
   }
 }
