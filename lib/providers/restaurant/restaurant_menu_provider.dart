@@ -37,7 +37,6 @@ class RestaurantMenuNotifier extends StateNotifier<List<FoodItem>> {
       ),
     ];
   }
-
   // ✅ ADD FOOD ITEM
   void addFoodItem(FoodItem item) {
     state = [...state, item];

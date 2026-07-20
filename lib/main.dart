@@ -1,6 +1,7 @@
 import 'package:e_foodie/screens/customer/sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'screens/customer/onboarding_screen.dart';
 import 'screens/customer/login_screen.dart';
 import 'screens/customer/home_menu_screen.dart';
@@ -9,7 +10,13 @@ import 'screens/rider/rider_dashboard.dart';
 import 'screens/admin/admin_dashboard_wrapper.dart';
 
 void main() {
+
+
+  Stripe.publishableKey = "pk_test_51Tm9iI46kaApcreV8gZkQazQJBK7abdRh2I4uRsDPh5BUIl5sjJZ7zK5hqiMxZisD7GBhm5Ss4yVxifqx12wyMoD000iJFfcQR";
+  Stripe.instance.applySettings();
+
   runApp(const ProviderScope(child: EFoodieApp()));
+
 }
 
 class EFoodieApp extends StatelessWidget {

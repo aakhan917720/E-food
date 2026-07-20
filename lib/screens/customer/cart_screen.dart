@@ -1,8 +1,11 @@
+import 'package:e_foodie/serivces/payment_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import '../../models/customer/cart_item.dart';
 import '../../providers/customer/cart_provider.dart';
 import '../../providers/customer/user_provider.dart';
+import 'order_tracking_screen.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -17,6 +20,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final cartItems = ref.watch(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
     final userProfile = ref.read(userProvider);
+    final grandTotal = cartNotifier.grandTotal; // ✅ Get grandTotal
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -88,7 +92,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               },
             ),
           ),
-          _buildCheckoutBottomSheet(context, cartNotifier.grandTotal),
+          _buildCheckoutBottomSheet(context, grandTotal),
         ],
       ),
     );
@@ -133,7 +137,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ],
           ),
           ElevatedButton(
-            onPressed: total > 0 ? () => _processCheckout(context) : null,
+            onPressed: total > 0 ? () => _processCheckout(context, total) : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE21B70),
               foregroundColor: Colors.white,
@@ -156,86 +160,72 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     );
   }
 
-  void _processCheckout(BuildContext context) {
-    // ✅ Check if mounted before showing dialog
+  // ✅ FIXED: Payment Process
+  Future<void> _processCheckout(BuildContext context, double total) async {
     if (!mounted) return;
 
-    // STRIPE INTENT ENGINE BLUEPRINT:
-    // 1. Create Stripe PaymentIntent
-    // final stripeService = StripeService();
-    // final paymentIntent = await stripeService.createPaymentIntent(
-    //   amount: (total * 100).toInt(),
-    //   currency: 'usd',
-    // );
-    //
-    // 2. Present Stripe Payment Sheet
-    // await stripeService.presentPaymentSheet(paymentIntent);
-    //
-    // FIREBASE TRANSACTIONAL PAYLOAD UPLOAD BLUEPRINT:
-    // 3. On successful payment, create order in Firestore
-    // final orderData = {
-    //   'userId': userProfile.id,
-    //   'items': cartItems.map((item) => item.toMap()).toList(),
-    //   'total': total,
-    //   'status': 'pending',
-    //   'createdAt': FieldValue.serverTimestamp(),
-    //   'paymentStatus': 'completed',
-    // };
-    // await FirebaseFirestore.instance
-    //     .collection('orders')
-    //     .add(orderData);
-    //
-    // 4. Clear cart and navigate to tracking
-    // ref.read(cartProvider.notifier).clearCart();
-    // Navigator.push(context, MaterialPageRoute(builder: (_) => OrderTrackingScreen()));
-
-    // Show payment simulation
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Processing Payment'),
-        content: const Column(
+      builder: (context) => const AlertDialog(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(),
             SizedBox(height: 16),
-            Text('Please wait...'),
+            Text('Processing Payment...'),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              // ✅ Check if mounted before navigation
-              if (!mounted) return;
-
-              Navigator.pop(dialogContext);
-
-              // ✅ Check again before clearing cart
-              if (!mounted) return;
-              ref.read(cartProvider.notifier).clearCart();
-
-              // ✅ Check again before popping
-              if (!mounted) return;
-              Navigator.pop(context);
-
-              // ✅ Show success snackbar
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Order placed successfully! 🎉'),
-                  backgroundColor: Color(0xFF2ECC71),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-            child: const Text('OK'),
-          ),
-        ],
       ),
     );
-  }
-}
+
+    try {
+      final paymentIntent = await PaymentService.createPaymentIntent(
+        amount: (total * 100).toInt(),
+        currency: 'usd',
+      );
+
+      // ✅ FIXED - Correct way
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: paymentIntent,
+          merchantDisplayName: 'E-Foodie',
+        ),
+      );
+
+      if (!mounted) {
+        Navigator.pop(context);
+        return;
+      }
+
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Payment Successful! 🎉'),
+          backgroundColor: Color(0xFF2ECC71),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      ref.read(cartProvider.notifier).clearCart();
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const OrderTrackingScreen()),
+      );
+
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Payment Failed: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }}
 
 class _CartItemCard extends StatelessWidget {
   final CartItem cartItem;
@@ -310,7 +300,6 @@ class _CartItemCard extends StatelessWidget {
           ),
           Row(
             children: [
-              // ✅ Decrease Button
               GestureDetector(
                 onTap: onDecrement,
                 child: CircleAvatar(
@@ -337,7 +326,6 @@ class _CartItemCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              // ✅ Increase Button
               GestureDetector(
                 onTap: onIncrement,
                 child: const CircleAvatar(
@@ -351,7 +339,6 @@ class _CartItemCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              // ✅ Delete Button
               GestureDetector(
                 onTap: onRemove,
                 child: Container(
