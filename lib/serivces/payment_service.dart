@@ -5,7 +5,12 @@ class PaymentService {
     required int amount,
     required String currency,
   }) async {
+    // 🔥 STRIPE BLUEPRINT - Real implementation
+    // 1. Call your backend API
+    // 2. Create PaymentIntent
+    // 3. Return PaymentIntent object
 
+    // ⚠️ MOCK - Demo ke liye (abhi ke liye)
     return PaymentIntent.fromJson({
       'id': 'pi_mock_${DateTime.now().millisecondsSinceEpoch}',
       'client_secret': 'mock_client_secret_${DateTime.now().millisecondsSinceEpoch}',

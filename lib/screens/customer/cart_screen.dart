@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import '../../models/customer/cart_item.dart';
 import '../../providers/customer/cart_provider.dart';
-import '../../providers/customer/user_provider.dart';
 import 'order_tracking_screen.dart';
+
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -19,8 +19,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   Widget build(BuildContext context) {
     final cartItems = ref.watch(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
-    final userProfile = ref.read(userProvider);
-    final grandTotal = cartNotifier.grandTotal; // ✅ Get grandTotal
+    final grandTotal = cartNotifier.grandTotal;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -160,7 +159,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     );
   }
 
-  // ✅ FIXED: Payment Process
   Future<void> _processCheckout(BuildContext context, double total) async {
     if (!mounted) return;
 
@@ -185,12 +183,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         currency: 'usd',
       );
 
-      // ✅ FIXED - Correct way
-      await Stripe.instance.initPaymentSheet(
-        paymentSheetParameters: SetupPaymentSheetParameters(
-          paymentIntentClientSecret: paymentIntent,
-          merchantDisplayName: 'E-Foodie',
-        ),
+      // ✅ FIXED: Use paymentIntent with clientSecret as String
+      await Stripe.instance.presentPaymentSheet(
+        paymentIntent: paymentIntent.clientSecret,  // ✅ String
       );
 
       if (!mounted) {
@@ -213,7 +208,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         context,
         MaterialPageRoute(builder: (_) => const OrderTrackingScreen()),
       );
-
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context);
@@ -227,6 +221,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     }
   }}
 
+// ✅ Moved outside the State class
 class _CartItemCard extends StatelessWidget {
   final CartItem cartItem;
   final VoidCallback onIncrement;
