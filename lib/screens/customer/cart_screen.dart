@@ -1,11 +1,10 @@
-import 'package:e_foodie/serivces/payment_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import '../../models/customer/cart_item.dart';
 import '../../providers/customer/cart_provider.dart';
+import '../../services/payment_service.dart';
 import 'order_tracking_screen.dart';
-
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -183,10 +182,17 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         currency: 'usd',
       );
 
-      // ✅ FIXED: Use paymentIntent with clientSecret as String
-      await Stripe.instance.presentPaymentSheet(
-        paymentIntent: paymentIntent.clientSecret,  // ✅ String
+      // ✅ VERSION 10.x.x KA SAHI TARIKA
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: paymentIntent['clientSecret'],
+          merchantDisplayName: 'E-Foodie',
+          customerId: null,
+          customerEphemeralKeySecret: null,
+        ),
       );
+
+      await Stripe.instance.presentPaymentSheet();
 
       if (!mounted) {
         Navigator.pop(context);
@@ -203,6 +209,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       );
 
       ref.read(cartProvider.notifier).clearCart();
+
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
@@ -221,7 +228,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     }
   }}
 
-// ✅ Moved outside the State class
 class _CartItemCard extends StatelessWidget {
   final CartItem cartItem;
   final VoidCallback onIncrement;
